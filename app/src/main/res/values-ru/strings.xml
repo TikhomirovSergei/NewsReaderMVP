@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">Новости</string>
+    <string name="header_business">Новости бизнеса</string>
+
+    <string name="navigation_drawer_open">Открыть меню</string>
+    <string name="navigation_drawer_close">Закрыть меню</string>
+    <string name="action_settings">Настройки</string>
+
+    <string name="nav_menu_category">Cписок новостных потоков</string>
+    <string name="nav_menu_business">Бизнес</string>
+
+    <string name="nav_header_title">Новости</string>
+    <string name="nav_header_desc">Заголовок меню</string>
+
+    <string name="context_news">Содержание новости</string>
+    <string name="context_news_read_more">
+        <u>Читать дальше...</u>
+    </string>
+
+    <string name="main_start_text">Новостных потоков не найдено.</string>
+</resources>
