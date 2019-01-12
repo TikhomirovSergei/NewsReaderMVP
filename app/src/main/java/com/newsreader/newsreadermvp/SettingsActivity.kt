@@ -8,29 +8,40 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.Toast
 import com.newsreader.newsreadermvp.presenter.MainPresenter
+import com.newsreader.newsreadermvp.repository.JsonNewsItem
+import com.newsreader.newsreadermvp.repository.NewsModel
 import kotlinx.android.synthetic.main.content_main.*
+
 
 class SettingsActivity : AppCompatActivity(), MainViewContract {
     private lateinit var btn: Button
     private lateinit var eText: EditText
+    private lateinit var lLayout: LinearLayout
 
     private lateinit var presenter: MainPresenter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
+        setTitle(R.string.settings_title)
+
+        val appPath = this.applicationInfo.dataDir
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        presenter = MainPresenter(this)
+        presenter = MainPresenter( this, NewsModel(appPath))
         progressBar.visibility = View.GONE
 
         eText = findViewById(R.id.settings_editText)
         btn = findViewById(R.id.settings_button)
         btn.setOnClickListener {
-            presenter.getUrl(eText.text.toString())
+            presenter.setUrl(eText.text.toString())
         }
+
+        lLayout = findViewById(R.id.settings_lLayout)
+        lLayout.visibility = View.VISIBLE
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -49,16 +60,18 @@ class SettingsActivity : AppCompatActivity(), MainViewContract {
     }
 
     override fun onDestroy() {
-        presenter.onDestroy()
         super.onDestroy()
+        presenter.onDestroy()
     }
 
     override fun showProgress() {
         progressBar.visibility = View.VISIBLE
+        lLayout.visibility = View.GONE
     }
 
     override fun hideProgress() {
         progressBar.visibility = View.GONE
+        lLayout.visibility = View.VISIBLE
     }
 
     override fun showToast(msg: String) {
@@ -68,5 +81,9 @@ class SettingsActivity : AppCompatActivity(), MainViewContract {
     override fun navigateToHomeScreen() {
         val intent = Intent(this, MainActivity::class.java)
         this.startActivity(intent)
+    }
+
+    override fun setNewsData(feedList: ArrayList<JsonNewsItem>) {
+        return
     }
 }

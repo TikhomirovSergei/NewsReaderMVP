@@ -7,20 +7,29 @@ import android.support.v4.view.GravityCompat
 import android.support.v4.widget.DrawerLayout
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.Toolbar
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.TextView
 import android.widget.Toast
 import com.newsreader.newsreadermvp.presenter.MainPresenter
+import com.newsreader.newsreadermvp.repository.JsonNewsItem
+import com.newsreader.newsreadermvp.repository.NewsModel
 import kotlinx.android.synthetic.main.content_main.*
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener, MainViewContract {
     private lateinit var presenter: MainPresenter
 
+    private lateinit var vRecView: RecyclerView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        val appPath = this.applicationInfo.dataDir
 
         val toolbar = findViewById<View>(R.id.toolbar) as Toolbar
         setSupportActionBar(toolbar)
@@ -34,8 +43,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val navigationView = findViewById<View>(R.id.nav_view) as NavigationView
         navigationView.setNavigationItemSelectedListener(this)
 
-        presenter = MainPresenter(this)
+        presenter = MainPresenter(this, NewsModel(appPath))
         progressBar.visibility = View.GONE
+
+        vRecView = findViewById(R.id.mainAct_recView)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        presenter.getNewsData()
     }
 
     override fun onBackPressed() {
@@ -96,5 +112,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun navigateToHomeScreen() {
         return
+    }
+
+    override fun setNewsData(feedList: ArrayList<JsonNewsItem>) {
+        vRecView.adapter = RecAdapter(feedList)
+        vRecView.layoutManager = LinearLayoutManager(this)
     }
 }
