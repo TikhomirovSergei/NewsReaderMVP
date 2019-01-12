@@ -18,4 +18,6 @@
     </string>
 
     <string name="main_start_text">Новостных потоков не найдено.</string>
+    <string name="settings_placeholder_text">Введите url новостного потока</string>
+    <string name="settings_add">Добавить</string>
 </resources>
