@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import com.newsreader.newsreadermvp.repository.JsonNewsItem
 
-class RecAdapter(val items: ArrayList<JsonNewsItem>) : RecyclerView.Adapter<RecHolder>() {
+class RecAdapter(private val items: ArrayList<JsonNewsItem>, private val listReadedNews: ArrayList<JsonNewsItem>?) : RecyclerView.Adapter<RecHolder>() {
 
     /**
      * прорисовка view
@@ -25,8 +25,22 @@ class RecAdapter(val items: ArrayList<JsonNewsItem>) : RecyclerView.Adapter<RecH
      * заполение view
      */
     override fun onBindViewHolder(holder: RecHolder?, position: Int) {
+        var b: Boolean = false
         val item = items[position]
+        val selectedItems = listReadedNews
+        if (selectedItems != null) {
+            for (i in 0 until selectedItems.size) {
+                if ((item.title == selectedItems[i].title) &&
+                        (item.description == selectedItems[i].description) &&
+                        (item.url == selectedItems[i].url) &&
+                        (item.urlToImage == selectedItems[i].urlToImage) &&
+                        (item.publishedAt == selectedItems[i].publishedAt)){
+                    b = true
+                    break
+                }
+            }
+        }
 
-        holder?.bind(item)
+        holder?.bind(item, b)
     }
 }

@@ -13,12 +13,14 @@ import android.widget.Toast
 import com.newsreader.newsreadermvp.presenter.MainPresenter
 import com.newsreader.newsreadermvp.repository.JsonNewsItem
 import com.newsreader.newsreadermvp.repository.NewsModel
+import com.newsreader.newsreadermvp.repository.UrlsItem
 import kotlinx.android.synthetic.main.content_main.*
 
 
 class SettingsActivity : AppCompatActivity(), MainViewContract {
     private lateinit var btn: Button
-    private lateinit var eText: EditText
+    private lateinit var eTextName: EditText
+    private lateinit var eTextUrl: EditText
     private lateinit var lLayout: LinearLayout
 
     private lateinit var presenter: MainPresenter
@@ -31,13 +33,14 @@ class SettingsActivity : AppCompatActivity(), MainViewContract {
         val appPath = this.applicationInfo.dataDir
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        presenter = MainPresenter( this, NewsModel(appPath))
+        presenter = MainPresenter(this, NewsModel(appPath))
         progressBar.visibility = View.GONE
 
-        eText = findViewById(R.id.settings_editText)
+        eTextName = findViewById(R.id.settings_eTextTitle)
+        eTextUrl = findViewById(R.id.settings_eTextUrl)
         btn = findViewById(R.id.settings_button)
         btn.setOnClickListener {
-            presenter.setUrl(eText.text.toString())
+            presenter.setUrl(eTextName.text.toString(), eTextUrl.text.toString())
         }
 
         lLayout = findViewById(R.id.settings_lLayout)
@@ -84,6 +87,10 @@ class SettingsActivity : AppCompatActivity(), MainViewContract {
     }
 
     override fun setNewsData(feedList: ArrayList<JsonNewsItem>) {
+        return
+    }
+
+    override fun setNavigationItems(urlsItemList: List<UrlsItem>) {
         return
     }
 }

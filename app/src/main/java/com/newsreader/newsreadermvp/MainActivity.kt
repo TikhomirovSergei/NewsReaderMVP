@@ -13,11 +13,14 @@ import android.support.v7.widget.Toolbar
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.TextView
 import android.widget.Toast
+import com.google.gson.Gson
 import com.newsreader.newsreadermvp.presenter.MainPresenter
 import com.newsreader.newsreadermvp.repository.JsonNewsItem
 import com.newsreader.newsreadermvp.repository.NewsModel
+import com.newsreader.newsreadermvp.repository.UrlsItem
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.content_main.*
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener, MainViewContract {
@@ -47,11 +50,16 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         progressBar.visibility = View.GONE
 
         vRecView = findViewById(R.id.mainAct_recView)
+
+        swipe_refresh_layout.setOnRefreshListener {
+            presenter.getNewsData(false)
+        }
     }
 
     override fun onResume() {
         super.onResume()
-        presenter.getNewsData()
+        presenter.getUrlList() //для отображения навигации
+        presenter.getNewsData(true)
     }
 
     override fun onBackPressed() {
@@ -64,7 +72,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.main, menu)
         return true
     }
@@ -81,12 +88,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        // Handle navigation view item clicks here.
-        val id = item.itemId
-
-        if (id == R.id.nav_menu_business) {
-            // Handle the camera action
-        }
+        //нажата клавиша навигации
+        presenter.setSelectedUrl(item.itemId)
+        presenter.getNewsData(true)
 
         val drawer = findViewById<View>(R.id.drawer_layout) as DrawerLayout
         drawer.closeDrawer(GravityCompat.START)
@@ -104,6 +108,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun hideProgress() {
         progressBar.visibility = View.GONE
+        swipe_refresh_layout.isRefreshing = false
     }
 
     override fun showToast(msg: String) {
@@ -115,7 +120,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     override fun setNewsData(feedList: ArrayList<JsonNewsItem>) {
-        vRecView.adapter = RecAdapter(feedList)
+        val listReadedNews = presenter.getListReadedNews()
+        vRecView.adapter = RecAdapter(feedList, listReadedNews)
         vRecView.layoutManager = LinearLayoutManager(this)
+    }
+
+    override fun setNavigationItems(urlsItemList: List<UrlsItem>) {
+        val navView = findViewById<View>(R.id.nav_view) as NavigationView
+        val menu = navView.menu
+        menu.clear()
+        for (itemList in urlsItemList) {
+            menu.add(R.id.menu_group, itemList.id, Menu.NONE, itemList.title)
+        }
     }
 }
