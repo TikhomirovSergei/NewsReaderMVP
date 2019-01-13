@@ -40,7 +40,7 @@ class NewsModel(path: String) {
                 var urlsItems = readUrlsFile()
 
                 if (urlsItems != null) {
-                    for (i in 0..urlsItems.size) {
+                    for (i in 0 until urlsItems.size) {
                         if ((urlsItems[i].value == url) || (urlsItems[i].title == title)) {
                             throw java.lang.Exception("Такой url или title уже используются.")
                         }
