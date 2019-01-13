@@ -32,7 +32,7 @@ class NewsModel(path: String) {
             observable.subscribe({
                 //некая проверка, что входной поток это json
                 try {
-                    val articles = Gson().fromJson(it.toString(), JsonNews::class.java)
+                    Gson().fromJson(it.toString(), JsonNews::class.java)
                 } catch (ex: java.lang.Exception) {
                     throw java.lang.Exception("Поддерживается только json поток")
                 }
