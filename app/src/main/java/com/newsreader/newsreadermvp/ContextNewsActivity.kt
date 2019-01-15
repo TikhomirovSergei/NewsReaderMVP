@@ -53,22 +53,16 @@ class ContextNewsActivity : AppCompatActivity(), MainViewContract {
     override fun onResume() {
         super.onResume()
 
-        var author = intent.getStringExtra("author")
         val title = intent.getStringExtra("title")
         val description = intent.getStringExtra("description")
         val url = intent.getStringExtra("url")
         val urlToImage = intent.getStringExtra("urlToImage")
         val publishedAt = intent.getStringExtra("publishedAt")
 
-        author = if (author !== null)
-            "by $author / "
-        else
-            ""
-
-        presenter.setReadedNews(JsonNewsItem(author, title, description, url, urlToImage, publishedAt, ""))
+        presenter.setReadedNews(JsonNewsItem(title, description, url, urlToImage, publishedAt))
 
         titleTextView.text = title
-        publishedAtTextView.text = author + deleteTZFromPublishAT(publishedAt)
+        publishedAtTextView.text = deleteTZFromPublishAT(publishedAt)
         Picasso.with(this).load(urlToImage).into(imgImageView)
         descTextView.text = description
 

@@ -5,14 +5,21 @@ class JsonNews(
         val articles: ArrayList<JsonNewsItem>
 )
 
+/*
+class RssNewsItem(
+        val description: String,
+        val image: String,
+        val link: String,
+        val publishDate: String,
+        val title: String
+)*/
+
 class JsonNewsItem(
-        val author: String,
         val title: String,
         val description: String,
         val url: String,
         val urlToImage: String,
-        val publishedAt: String,
-        val content: String
+        val publishedAt: String
 )
 
 //список корректных новостных потоков введенных пользователем

@@ -5,11 +5,17 @@ import com.google.gson.GsonBuilder
 import com.newsreader.newsreadermvp.createRequest
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import me.toptas.rssconverter.RssConverterFactory
+import me.toptas.rssconverter.RssFeed
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
 import java.io.BufferedReader
 import java.io.File
 
 //https://habr.com/rss/hubs/all/
-
+//TODO поработать над отображением rss description
 class NewsModel(path: String) {
     private var urlsBD: String = "$path/Urls.json"
     private var selectedUrl: String = "$path/SelectedUrl.json"
@@ -30,35 +36,35 @@ class NewsModel(path: String) {
                     .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
             observable.subscribe({
-                //некая проверка, что входной поток это json
+                var isJson = false
                 try {
+                    //некая проверка, что входной поток это json
                     Gson().fromJson(it.toString(), JsonNews::class.java)
+                    isJson = true
                 } catch (ex: java.lang.Exception) {
-                    throw java.lang.Exception("Поддерживается только json поток")
+                    val retrofit = Retrofit.Builder()
+                            .baseUrl(url)
+                            .addConverterFactory(RssConverterFactory.create())
+                            .build()
+
+                    val service = retrofit.create(RssService::class.java)
+                    service.getRss(url)
+                            .enqueue(object : Callback<RssFeed> {
+                                override fun onResponse(call: Call<RssFeed>, response: Response<RssFeed>) {
+                                    addToListNewCorrectUrl(title, url, "rss")
+                                    onFinishedListener.onSetUrlSuccess()
+                                }
+
+                                override fun onFailure(call: Call<RssFeed>, t: Throwable) {
+                                    onFinishedListener.onResultFail(t.toString())
+                                }
+                            })
                 }
 
-                var urlsItems = readUrlsFile()
-
-                if (urlsItems != null) {
-                    for (i in 0 until urlsItems.size) {
-                        if ((urlsItems[i].value == url) || (urlsItems[i].title == title)) {
-                            throw java.lang.Exception("Такой url или title уже используются.")
-                        }
-                    }
-                    urlsItems.add(UrlsItem(urlsItems.size, url, "json", title))
-                    writeSelectedUrlFromFile(UrlsItem(0, url, "json", title))
-                } else {
-                    urlsItems = ArrayList<UrlsItem>()
-                    urlsItems.add(UrlsItem(0, url, "json", title))
-                    writeSelectedUrlFromFile(UrlsItem(0, url, "json", title))
+                if (isJson) {
+                    addToListNewCorrectUrl(title, url, "json")
+                    onFinishedListener.onSetUrlSuccess()
                 }
-
-                val urls = Urls(urlsItems)
-
-                val gson = GsonBuilder().setPrettyPrinting().create()
-                File(urlsBD).writeText(gson.toJson(urls))
-
-                onFinishedListener.onSetUrlSuccess()
             }, {
                 onFinishedListener.onResultFail(it.toString())
             })
@@ -83,6 +89,33 @@ class NewsModel(path: String) {
                 }, {
                     onFinishedListener.onResultFail(it.toString())
                 })
+            } else if (type == "rss") {
+                val retrofit = Retrofit.Builder()
+                        .baseUrl(url)
+                        .addConverterFactory(RssConverterFactory.create())
+                        .build()
+
+                val service = retrofit.create(RssService::class.java)
+                service.getRss(url)
+                        .enqueue(object : Callback<RssFeed> {
+                            override fun onResponse(call: Call<RssFeed>, response: Response<RssFeed>) {
+                                var newsList = ArrayList<JsonNewsItem>()
+                                for (item in response.body()!!.items!!) {
+                                    var newsItem = JsonNewsItem(
+                                            item.title ?: "",
+                                            item.description?: "",
+                                            item.link?: "",
+                                            item.image?: "",
+                                            item.publishDate?: "")
+                                    newsList.add(newsItem)
+                                }
+                                onFinishedListener.onGetNewsDataSuccess(newsList)
+                            }
+
+                            override fun onFailure(call: Call<RssFeed>, t: Throwable) {
+                                onFinishedListener.onResultFail(t.toString())
+                            }
+                        })
             } else
                 throw java.lang.Exception("Поддерживается только json поток.")
         } catch (ex: java.lang.Exception) {
@@ -222,6 +255,33 @@ class NewsModel(path: String) {
             return Gson().fromJson(inputString, Urls::class.java)?.urls
         } catch (ex: Exception) {
             throw ex
+        }
+    }
+
+    private fun addToListNewCorrectUrl(title: String, url: String, type: String) {
+        try {
+            var urlsItems = readUrlsFile()
+
+            if (urlsItems != null) {
+                for (i in 0 until urlsItems.size) {
+                    if ((urlsItems[i].value == url) || (urlsItems[i].title == title)) {
+                        throw java.lang.Exception("Такой url или title уже используются.")
+                    }
+                }
+                urlsItems.add(UrlsItem(urlsItems.size, url, type, title))
+                writeSelectedUrlFromFile(UrlsItem(0, url, type, title))
+            } else {
+                urlsItems = ArrayList<UrlsItem>()
+            }
+            urlsItems.add(UrlsItem(urlsItems.size, url, type, title))
+            writeSelectedUrlFromFile(UrlsItem(0, url, type, title))
+
+            val urls = Urls(urlsItems)
+
+            val gson = GsonBuilder().setPrettyPrinting().create()
+            File(urlsBD).writeText(gson.toJson(urls))
+        } catch (ex: Exception) {
+            throw java.lang.Exception(ex.toString())
         }
     }
 }

@@ -25,11 +25,11 @@ class RecHolder(view: View) : RecyclerView.ViewHolder(view) {
         vDesc.text = item.description
         vData.text = deleteTZFromPublishAT(item.publishedAt)
 
-        Picasso.with(vImg.context).load(item.urlToImage).into(vImg)
+        if (item.urlToImage != "")
+            Picasso.with(vImg.context).load(item.urlToImage).into(vImg)
 
         itemView.setOnClickListener {
             val intent = Intent(vImg.context, ContextNewsActivity::class.java)
-            intent.putExtra("author", item.author)
             intent.putExtra("title", item.title)
             intent.putExtra("description", item.description)
             intent.putExtra("url", item.url)
