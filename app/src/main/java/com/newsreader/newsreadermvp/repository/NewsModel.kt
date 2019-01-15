@@ -268,8 +268,6 @@ class NewsModel(path: String) {
                         throw java.lang.Exception("Такой url или title уже используются.")
                     }
                 }
-                urlsItems.add(UrlsItem(urlsItems.size, url, type, title))
-                writeSelectedUrlFromFile(UrlsItem(0, url, type, title))
             } else {
                 urlsItems = ArrayList<UrlsItem>()
             }
