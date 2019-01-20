@@ -63,7 +63,9 @@ class ContextNewsActivity : AppCompatActivity(), MainViewContract {
 
         titleTextView.text = title
         publishedAtTextView.text = deleteTZFromPublishAT(publishedAt)
-        Picasso.with(this).load(urlToImage).into(imgImageView)
+
+        if (urlToImage != "")
+            Picasso.with(this).load(urlToImage).into(imgImageView)
         descTextView.text = description
 
         titleTextView.setOnClickListener {
